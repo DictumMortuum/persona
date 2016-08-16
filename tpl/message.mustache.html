@@ -1,11 +1,11 @@
-<div class="list-group-item clearfix" id="{{_id}}" data-rev="{{_rev}}">
-  <div class="row">
-    <div class="text">{{{text}}}</div>
+<div class="list-group-item" id="{{_id}}" data-rev="{{_rev}}">
+  <div class="row-action-primary">
+    <i class="glyphicon glyphicon-home"></i>
   </div>
-  <div class="row">
-    <span class="pull-left">
-      {{{from}}} on {{{date}}}
-    </span>
-    <button type="button" class="btn btn-danger btn-circle pull-right"><i class="glyphicon glyphicon-remove"></i></button>
+  <div class="row-content">
+    <div class="least-content">{{{date}}}</div>
+    <h4 class="list-group-item-heading">{{{from}}}</h4>
+    <p class="list-group-item-text">{{text}}</p>
   </div>
-</div>'
+</div>
+<div class="list-group-separator"></div>
