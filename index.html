@@ -7,6 +7,8 @@
   <meta name="description" content="Role playing games social network">
   <meta name="author" content="Dimitris Raviolos">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="style.css" rel="stylesheet">
   <!--[if lt IE 9]>
   <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.2/html5shiv.min.js"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/respond.js/1.4.2/respond.min.js"></script>
@@ -14,21 +16,83 @@
   <link rel="shortcut icon" href="favicon.ico">
 </head>
 <body>
+  <div class="container">
+    <div class="row">
+      <input class="blabla" type="text"></input>
+      <button class="btn btn-danger user" type="button">USER</a>
+      <button class="btn btn-danger character" type="button">CHAR</a>
+      <button class="btn btn-danger message" type="button">MESSAGE</a>
+    </div>
+  </div>
   <script src="node_modules/jquery/dist/jquery.min.js"></script>
+  <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
   <script src="node_modules/mustache/mustache.min.js"></script>
   <script src="node_modules/pouchdb/dist/pouchdb.min.js"></script>
   <script src="node_modules/moment/moment.js"></script>
   <script src="lib/db.js"></script>
   <script src="lib/view.js"></script>
+  <script src="lib/template.js"></script>
+  <script src="lib/transform.js"></script>
   <script>
+    function handle(doc) {
+      doc = transform[doc.type](doc)
+      var res = template.render(doc.type, doc)
+
+      if($("#" + doc._id).length === 0) {
+        $(res).appendTo("#" + doc.type + "_list")
+      } else {
+        $("#" + doc.type + "_list").html(res)
+      }
+    }
+
+    var transform = new persona.transform()
+    var template = new persona.template("tpl/")
     var db = new persona.db({
       local: "persona",
-      remote: "http://localhost:5984/persona"
+      remote: "http://localhost:5984/persona",
+      change: function(info) {
+        var doc = info.change.docs[0]
+
+        if(transform.deleted(doc)) {
+          //remove doc
+        } else {
+          handle(doc)
+        }
+      }
     })
 
-    db.init().then(function(info) {
-      db.message().then(function(docs) {
-        console.log(docs)
+    db.init().then(function(info1, info2) {
+      template.init(["message", "list"]).then(function() {
+        $(template.render("list", {
+          id: "message_list",
+          heading: "List of messages"
+        })).appendTo("body > div")
+
+        db.message().then(function(docs) {
+          console.log(docs)
+          for(var i = 0; i < docs.length; i++) {
+            handle(docs[i])
+          }
+        })
+      })
+
+      function _click(type) {
+        console.log("clicked" + type)
+        db.insert({
+          _id: new Date().toJSON(),
+          type: type,
+          text: $('.blabla').val()
+        })
+      }
+
+      $(".btn.user").click(function() {
+        _click("user")
+      })
+      $(".btn.message").click(function() {
+        _click("message")
+      })
+      $(".btn.character").click(function() {
+        _click("character")
       })
     })
   </script>
