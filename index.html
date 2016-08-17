@@ -28,24 +28,6 @@
   <script src="lib/template.js"></script>
   <script src="lib/transform.js"></script>
   <script>
-    function handle(doc) {
-      doc = transform[doc.type](doc)
-      var res = template.render(doc.type, doc)
-
-      // Navigation menu
-      if($("#user_" + doc.from).length === 0) {
-        $(template.render("user", {
-          user: doc.from
-        })).appendTo("#" + doc.type + "_menu")
-      }
-
-      if($("#" + doc._id).length === 0) {
-        $(res).appendTo("#" + doc.type + "_list")
-      } else {
-        $("#" + doc.type + "_list").html(res)
-      }
-    }
-
     var transform = new persona.transform()
     var template = new persona.template("tpl/")
     var db = new persona.db({
@@ -54,49 +36,24 @@
       change: function(info) {
         var doc = info.change.docs[0]
         console.log(doc)
+        /*
         if(transform.deleted(doc)) {
           db.remove(doc._id, doc._rev)
           $("#" + doc._id).hide()
         } else {
           handle(doc)
-        }
+        }*/
       }
     })
 
-    db.init().then(function(info1, info2) {
-      template.init(["message", "list", "user", "navbar"]).then(function() {
-        $(template.render("navbar", {})).prependTo("body > div")
-        $(template.render("list", {
-          id: "message",
-          heading: "Messages"
-        })).appendTo("body > div")
-
-        $(".btn.message").click(function() {
-          _click("message")
-        })
-
-        db.message().then(function(docs) {
-          console.log(docs)
-          for(var i = 0; i < docs.length; i++) {
-            handle(docs[i])
-          }
-        })
-      })
-
-      function _click(type) {
-        console.log("clicked" + type)
-        db.insert({
-          _id: new Date().toJSON(),
-          type: type,
-          text: $("#textarea").val()
-        })
-      }
-
-      $(".btn.user").click(function() {
-        _click("user")
-      })
-      $(".btn.character").click(function() {
-        _click("character")
+    Promise.all([
+      db.init(),
+      template.init(["message", "list", "user", "navbar"])
+    ]).then(function() {
+      db.message().then(function(docs) {
+        $(template.render("list", transform.message_view(docs), [
+          "user", "message", "navbar"
+        ])).appendTo("body > div")
       })
     })
   </script>
@@ -104,7 +61,7 @@
   <script src="dist/js/material.js"></script>
   <script src="dist/js/ripples.js"></script>
   <script>
-    $.material.init();
+    $.material.init()
   </script>
 </body>
 </html>

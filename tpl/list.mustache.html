@@ -1,11 +1,49 @@
+{{> navbar}}
 <div class="row">
   <nav class="col-xs-3 menu">
-    <ul id="{{id}}_menu"></ul>
+    <ul id="inbox_menu">
+      {{#users}}
+        {{> user}}
+      {{/users}}
+    </ul>
   </nav>
   <div class="col-xs-6">
     <div class="bs-component">
-      <div class="list-group-separator"></div>
-      <div class="list-group" id="{{id}}_list"></div>
+      <div class="well">
+        <div id="inbox_list">
+          {{#users}}
+            <div class="page" id="inbox_{{username}}">
+            {{#messages}}
+              {{> message}}
+            {{/messages}}
+            </div>
+          {{/users}}
+        </div>
+        <textarea class="form-control" rows="1" id="inboxtext"></textarea>
+        <button type="button" class="btn btn-primary message">Send</button>
+      </div>
     </div>
   </div>
 </div>
+<script>
+$(".btn.message").click(function() {
+  db.insert({
+    _id: new Date().toJSON(),
+    type: "message",
+    text: $("#inboxtext").val(),
+    from: window.user || "someone2"
+  })
+})
+
+$(".menu li").click(function () {
+  if (!$(this).data("target")) return
+  if ($(this).is(".active")) return
+  $(".menu li").not($(this)).removeClass("active")
+  $(".page").not(page).removeClass("active").hide()
+  window.page = $(this).data("target")
+  var page = $(window.page)
+  //window.location.hash = window.page
+  $(this).addClass("active")
+  page.show()
+})
+</script>
