@@ -10,6 +10,7 @@
   <link href="node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" type="text/css" href="dist/css/bootstrap-material-design.css">
   <link rel="stylesheet" type="text/css" href="dist/css/ripples.min.css">
+  <link rel="stylesheet" type="text/css" href="index.css">
   <!--[if lt IE 9]>
   <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.2/html5shiv.min.js"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/respond.js/1.4.2/respond.min.js"></script>
@@ -17,21 +18,11 @@
   <link rel="shortcut icon" href="favicon.ico">
 </head>
 <body>
-  <div class="container">
-    <div class="row">
-      <input class="blabla" type="text"></input>
-      <button class="btn btn-danger user" type="button">USER</a>
-      <button class="btn btn-danger character" type="button">CHAR</a>
-      <button class="btn btn-danger message" type="button">MESSAGE</a>
-    </div>
-  </div>
+  <div class="container-fluid main"></div>
   <script src="node_modules/jquery/dist/jquery.min.js"></script>
-  <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
   <script src="node_modules/mustache/mustache.min.js"></script>
   <script src="node_modules/pouchdb/dist/pouchdb.min.js"></script>
   <script src="node_modules/moment/moment.js"></script>
-  <script src="dist/js/material.js"></script>
-  <script src="dist/js/ripples.js"></script>
   <script src="lib/db.js"></script>
   <script src="lib/view.js"></script>
   <script src="lib/template.js"></script>
@@ -40,6 +31,13 @@
     function handle(doc) {
       doc = transform[doc.type](doc)
       var res = template.render(doc.type, doc)
+
+      // Navigation menu
+      if($("#user_" + doc.from).length === 0) {
+        $(template.render("user", {
+          user: doc.from
+        })).appendTo("#" + doc.type + "_menu")
+      }
 
       if($("#" + doc._id).length === 0) {
         $(res).appendTo("#" + doc.type + "_list")
@@ -55,9 +53,10 @@
       remote: "http://localhost:5984/persona",
       change: function(info) {
         var doc = info.change.docs[0]
-
+        console.log(doc)
         if(transform.deleted(doc)) {
-          //remove doc
+          db.remove(doc._id, doc._rev)
+          $("#" + doc._id).hide()
         } else {
           handle(doc)
         }
@@ -65,11 +64,16 @@
     })
 
     db.init().then(function(info1, info2) {
-      template.init(["message", "list"]).then(function() {
+      template.init(["message", "list", "user", "navbar"]).then(function() {
+        $(template.render("navbar", {})).prependTo("body > div")
         $(template.render("list", {
-          id: "message_list",
-          heading: "List of messages"
+          id: "message",
+          heading: "Messages"
         })).appendTo("body > div")
+
+        $(".btn.message").click(function() {
+          _click("message")
+        })
 
         db.message().then(function(docs) {
           console.log(docs)
@@ -84,20 +88,23 @@
         db.insert({
           _id: new Date().toJSON(),
           type: type,
-          text: $('.blabla').val()
+          text: $("#textarea").val()
         })
       }
 
       $(".btn.user").click(function() {
         _click("user")
       })
-      $(".btn.message").click(function() {
-        _click("message")
-      })
       $(".btn.character").click(function() {
         _click("character")
       })
     })
+  </script>
+  <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+  <script src="dist/js/material.js"></script>
+  <script src="dist/js/ripples.js"></script>
+  <script>
+    $.material.init();
   </script>
 </body>
 </html>
