@@ -1,4 +1,17 @@
-<li class="withripple" id="user_{{username}}" data-target="#inbox_{{username}}">
+<li class="withripple" id="user-{{username}}" data-target="#inbox-user-{{username}}">
   @{{username}}
   <div class="ripple-container"></div>
 </li>
+<script>
+$(".menu li").click(function () {
+  if (!$(this).data("target")) return
+  if ($(this).is(".active")) return
+  $(".menu li").not($(this)).removeClass("active")
+  $(".page").not(page).removeClass("active").hide()
+  window.page = $(this).data("target")
+  var page = $(window.page)
+  window.location.hash = window.page
+  $(this).addClass("active")
+  page.show()
+})
+</script>

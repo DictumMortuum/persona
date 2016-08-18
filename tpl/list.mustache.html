@@ -1,25 +1,25 @@
 {{> navbar}}
 <div class="row">
   <nav class="col-xs-3 menu">
-    <ul id="inbox_menu">
+    <ul id="inbox-menu">
       {{#users}}
         {{> user}}
       {{/users}}
     </ul>
   </nav>
-  <div class="col-xs-6">
+  <div class="col-xs-8">
     <div class="bs-component">
       <div class="well">
-        <div id="inbox_list">
+        <div id="inbox-list">
           {{#users}}
-            <div class="page" id="inbox_{{username}}">
+            <div class="page" id="inbox-user-{{username}}">
             {{#messages}}
               {{> message}}
             {{/messages}}
             </div>
           {{/users}}
         </div>
-        <textarea class="form-control" rows="1" id="inboxtext"></textarea>
+        <textarea class="form-control" rows="1" id="inbox-text"></textarea>
         <button type="button" class="btn btn-primary message">Send</button>
       </div>
     </div>
@@ -30,20 +30,8 @@ $(".btn.message").click(function() {
   db.insert({
     _id: new Date().toJSON(),
     type: "message",
-    text: $("#inboxtext").val(),
+    text: $("#inbox-text").val(),
     from: window.user || "someone2"
   })
-})
-
-$(".menu li").click(function () {
-  if (!$(this).data("target")) return
-  if ($(this).is(".active")) return
-  $(".menu li").not($(this)).removeClass("active")
-  $(".page").not(page).removeClass("active").hide()
-  window.page = $(this).data("target")
-  var page = $(window.page)
-  //window.location.hash = window.page
-  $(this).addClass("active")
-  page.show()
 })
 </script>

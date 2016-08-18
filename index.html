@@ -7,7 +7,7 @@
   <meta name="description" content="Role playing games social network">
   <meta name="author" content="Dimitris Raviolos">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" type="text/css" href="dist/css/bootstrap.min.css">
   <link rel="stylesheet" type="text/css" href="dist/css/bootstrap-material-design.css">
   <link rel="stylesheet" type="text/css" href="dist/css/ripples.min.css">
   <link rel="stylesheet" type="text/css" href="index.css">
@@ -18,7 +18,7 @@
   <link rel="shortcut icon" href="favicon.ico">
 </head>
 <body>
-  <div class="container-fluid main"></div>
+  <div class="container main"></div>
   <script src="node_modules/jquery/dist/jquery.min.js"></script>
   <script src="node_modules/mustache/mustache.min.js"></script>
   <script src="node_modules/pouchdb/dist/pouchdb.min.js"></script>
@@ -30,34 +30,70 @@
   <script>
     var transform = new persona.transform()
     var template = new persona.template("tpl/")
+    var view = new persona.view()
     var db = new persona.db({
       local: "persona",
       remote: "http://localhost:5984/persona",
       change: function(info) {
         var doc = info.change.docs[0]
         console.log(doc)
-        /*
+
         if(transform.deleted(doc)) {
           db.remove(doc._id, doc._rev)
           $("#" + doc._id).hide()
         } else {
-          handle(doc)
-        }*/
+          if($("#user-" + doc.from).length === 0) {
+            $(template.render("user", {username: doc.from})).appendTo("#inbox-menu")
+          }
+
+          if($("#inbox-user-" + doc.from).length === 0) {
+            $(template.render("page", {username: doc.from})).appendTo("#inbox-list")
+          }
+
+          $(template.render("message", doc)).appendTo("#inbox-user-" + doc.from)
+        }
       }
     })
 
     Promise.all([
       db.init(),
-      template.init(["message", "list", "user", "navbar"])
+      template.init(["message", "list", "user", "navbar", "page", "home"])
     ]).then(function() {
-      db.message().then(function(docs) {
-        $(template.render("list", transform.message_view(docs), [
-          "user", "message", "navbar"
-        ])).appendTo("body > div")
-      })
+      view.home()
+    })
+
+    var view = {
+      login: function() {
+
+      },
+      home: function() {
+        $(".main").html(template.render("home", {
+          areas: [
+            "inbox", "characters", "timeline"
+          ]
+        }, [
+            "navbar"
+          ]
+        ))
+      },
+      inbox: function() {
+        db.message().then(function(docs) {
+          $(".main").html(template.render("list", transform.message_view(docs), [
+            "user", "message", "navbar"
+          ]))
+        })
+      },
+      character: function() {
+
+      }
+    }
+
+    $(window).on("hashchange", function() {
+      //render this instead
+      decodeURI(window.location.hash)
     })
   </script>
-  <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+  <script src="dist/js/bootstrap.min.js"></script>
   <script src="dist/js/material.js"></script>
   <script src="dist/js/ripples.js"></script>
   <script>
