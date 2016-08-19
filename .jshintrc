@@ -2,5 +2,6 @@
   "node": true,
   "jquery": true,
   "browser": true,
-  "asi": true
+  "asi": true,
+  "esversion": 6
 }
