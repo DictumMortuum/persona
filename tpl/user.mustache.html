@@ -1,12 +1,9 @@
-<li class="withripple" id="user-{{username}}" data-target="#inbox-user-{{username}}">
-  @{{username}}
-  <div class="ripple-container"></div>
-</li>
+<a href="javascript:void(0)" id="user-{{username}}" class="btn btn-raised vertical" data-target="#inbox-user-{{username}}">@{{username}}</a>
 <script>
-$(".menu li").click(function () {
+$(".btn.vertical").click(function () {
   if (!$(this).data("target")) return
   if ($(this).is(".active")) return
-  $(".menu li").not($(this)).removeClass("active")
+  $(".btn.vertical").not($(this)).removeClass("active")
   $(".page").not(page).removeClass("active").hide()
   window.page = $(this).data("target")
   var page = $(window.page)
