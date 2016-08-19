@@ -24,10 +24,10 @@
   <script src="node_modules/mustache/mustache.min.js"></script>
   <script src="node_modules/pouchdb/dist/pouchdb.min.js"></script>
   <script src="node_modules/moment/moment.js"></script>
-  <script src="lib/super.js"></script>
+  <script src="lib/doc.js"></script>
+  <script src="lib/module.js"></script>
   <script src="lib/view.js"></script>
   <script src="lib/template.js"></script>
-  <script src="lib/transform.js"></script>
   <script src="lib/database.js"></script>
   <script>
   var db = new Database({
@@ -55,10 +55,6 @@
     }
   })
 
-  var transform = new Transform({
-    moment: window.moment
-  })
-
   var template = new Template({
     path: "tpl/",
     engine: window.Mustache,
@@ -67,7 +63,6 @@
 
   var view = new View({
     template: template,
-    transform: transform,
     db: db,
     jQuery: $
   })
@@ -78,7 +73,6 @@
   ]).then(function() {
     view.render()
   })
-
   </script>
   <script src="dist/js/bootstrap.min.js"></script>
   <script src="dist/js/material.js"></script>
