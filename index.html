@@ -18,18 +18,137 @@
   <link rel="shortcut icon" href="favicon.ico">
 </head>
 <body>
-  <div class="container main"></div>
-  <script src="http://localhost/js/browser.min.js"></script>
+  <div class="container main" id="container"></div>
   <script src="node_modules/jquery/dist/jquery.min.js"></script>
   <script src="node_modules/mustache/mustache.min.js"></script>
   <script src="node_modules/pouchdb/dist/pouchdb.min.js"></script>
   <script src="node_modules/moment/moment.js"></script>
+  <script src="dist/js/react.min.js"></script>
+  <script src="dist/js/react-dom.min.js"></script>
+  <script src="http://localhost/js/browser.min.js"></script>
   <script src="lib/doc.js"></script>
   <script src="lib/module.js"></script>
   <script src="lib/view.js"></script>
   <script src="lib/template.js"></script>
   <script src="lib/database.js"></script>
-  <script>
+  <script type="text/babel">
+  class PersonaMessage extends React.Component {
+    render() {
+      return (
+        <div className="row" id={this.props.doc._id} data-rev={this.props.doc._rev}>
+          <p className="col-xs-8">{this.props.doc.text}</p>
+          <p className="col-xs-4 pull-right">{this.props.doc.date}</p>
+        </div>
+      )
+    }
+  }
+
+  class PersonaMessageList extends React.Component {
+    constructor() {
+      super()
+      this.state = {
+        name: undefined,
+        data: []
+      }
+    }
+    componentDidMount() {
+      this.setState({
+        name: this.props.name,
+        data: this.props.data
+      })
+    }
+    render() {
+      var id = "inbox-user-" + this.props.name
+      var nodes = this.state.data.map((doc) => {
+        return (
+          <PersonaMessage doc={doc} />
+        )
+      })
+      return (
+        <div className="page" id={id}>
+          {nodes}
+        </div>
+      )
+    }
+  }
+
+  class PersonaUser extends React.Component {
+    constructor() {
+      super()
+      this.state = {}
+      this.state.active = false
+      this.handleClick = this.handleClick.bind(this)
+    }
+
+    handleClick() {
+      this.state.active=true
+      if ($(this).is(".active")) return
+      $(".btn.vertical").not($(this)).removeClass("active")
+      $(".page").not(page).removeClass("active").hide()
+      window.page = $(this).data("target")
+      var page = $(window.page)
+      window.location.hash = window.page
+      $(this).addClass("active")
+      page.show()
+    }
+
+    render() {
+      var classes = ["btn", "btn-raised", "vertical"]
+      var target = "#inbox-user-" + this.props.name
+
+      if(this.state.active) {
+        classes.push("active")
+      }
+
+      classes = classes.join(" ")
+
+      return (
+        <a href="javascript:void(0)" className={classes} onClick={this.handleClick}>@{this.props.name}</a>
+      )
+    }
+  }
+
+  class PersonaUserList extends React.Component {
+    render() {
+      var nodes = this.props.data.map(function(user) {
+        return (
+          <PersonaUser name={user.name} />
+        )
+      })
+      return (
+        <div className="col-xs-4">
+          <div className="btn-group-vertical">
+            {nodes}
+          </div>
+        </div>
+      )
+    }
+  }
+
+  class PersonaInbox extends React.Component {
+    render() {
+      var nodes = this.props.data.users.map((user) => {
+        return (
+          <PersonaMessageList name={user.name} data={user.docs} />
+        )
+      })
+      return (
+        <div className="row">
+          <PersonaUserList data={this.props.data.users} />
+          <div className="col-xs-8">
+            <div className="bs-component">
+              <div className="well">
+                {nodes}
+              </div>
+              <textarea className="form-control" rows="1"></textarea>
+              <button type="button" className="btn btn-primary message">Send</button>
+            </div>
+          </div>
+        </div>
+      )
+    }
+  }
+
   var db = new Database({
     pouch: window.PouchDB,
     local: "persona",
@@ -71,7 +190,25 @@
     db.init(),
     template.init(["message", "list", "user", "navbar", "page", "home"])
   ]).then(function() {
-    view.render()
+    //view.render()
+    db.query(
+      d => d.type === "message"
+    ).then(function(docs) {
+      var inb = new Inbox(docs)
+      setInterval(() => {
+        inb.users[0].name = new Date().toString()
+        /*inb.users[0].docs.push({
+          id: new Date().toString(),
+          rev: 0,
+          text: new Date().toString(),
+          date: ""
+        })*/
+        ReactDOM.render(
+          <PersonaInbox data={inb} />,
+          document.getElementById('container')
+        )
+      }, 50);
+    })
   })
   </script>
   <script src="dist/js/bootstrap.min.js"></script>
