@@ -32,14 +32,28 @@
   <script src="lib/template.js"></script>
   <script src="lib/database.js"></script>
   <script type="text/babel">
+  window.user = "someone"
   class PersonaMessage extends React.Component {
     render() {
-      return (
-        <div className="row" id={this.props.doc._id} data-rev={this.props.doc._rev}>
-          <p className="col-xs-8">{this.props.doc.text}</p>
-          <p className="col-xs-4 pull-right">{this.props.doc.date}</p>
-        </div>
-      )
+      var raw
+
+      if(this.props.doc.from === this.props.user) {
+        raw = (
+          <tr className="info">
+            <td>{this.props.doc.text}</td>
+            <td></td>
+          </tr>
+        )
+      } else {
+        raw = (
+          <tr>
+            <td></td>
+            <td>{this.props.doc.text}</td>
+          </tr>
+        )
+      }
+
+      return raw
     }
   }
 
@@ -48,77 +62,36 @@
       super()
       this.state = {
         name: undefined,
-        data: []
+        data: [],
+        user: undefined
       }
     }
     componentDidMount() {
       this.setState({
         name: this.props.name,
-        data: this.props.data
+        data: this.props.data,
+        user: window.user
       })
     }
     render() {
-      var id = "inbox-user-" + this.props.name
       var nodes = this.state.data.map((doc) => {
         return (
-          <PersonaMessage doc={doc} />
+          <PersonaMessage doc={doc} user={this.state.user}/>
         )
       })
       return (
-        <div className="page" id={id}>
-          {nodes}
-        </div>
-      )
-    }
-  }
-
-  class PersonaUser extends React.Component {
-    constructor() {
-      super()
-      this.state = {}
-      this.state.active = false
-      this.handleClick = this.handleClick.bind(this)
-    }
-
-    handleClick() {
-      this.state.active=true
-      if ($(this).is(".active")) return
-      $(".btn.vertical").not($(this)).removeClass("active")
-      $(".page").not(page).removeClass("active").hide()
-      window.page = $(this).data("target")
-      var page = $(window.page)
-      window.location.hash = window.page
-      $(this).addClass("active")
-      page.show()
-    }
-
-    render() {
-      var classes = ["btn", "btn-raised", "vertical"]
-      var target = "#inbox-user-" + this.props.name
-
-      if(this.state.active) {
-        classes.push("active")
-      }
-
-      classes = classes.join(" ")
-
-      return (
-        <a href="javascript:void(0)" className={classes} onClick={this.handleClick}>@{this.props.name}</a>
-      )
-    }
-  }
-
-  class PersonaUserList extends React.Component {
-    render() {
-      var nodes = this.props.data.map(function(user) {
-        return (
-          <PersonaUser name={user.name} />
-        )
-      })
-      return (
-        <div className="col-xs-4">
-          <div className="btn-group-vertical">
-            {nodes}
+        <div className="col-md-3 col-xs-6">
+          <div className="panel panel-primary">
+            <div className="panel-heading">
+              <h3 className="panel-title">{this.props.name}</h3>
+            </div>
+            <div className="panel-body">
+              <table className="table table-hover">
+                <tbody>
+                {nodes}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )
@@ -134,14 +107,9 @@
       })
       return (
         <div className="row">
-          <PersonaUserList data={this.props.data.users} />
-          <div className="col-xs-8">
+          <div className="col-xs-12">
             <div className="bs-component">
-              <div className="well">
-                {nodes}
-              </div>
-              <textarea className="form-control" rows="1"></textarea>
-              <button type="button" className="btn btn-primary message">Send</button>
+              {nodes}
             </div>
           </div>
         </div>
